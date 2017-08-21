@@ -1,6 +1,10 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -22,15 +26,21 @@ int main(){
 	int protocol = 0;
 	int status = 0;
 	int file_descriptor = 0;
-	int port_number = 6010;
+	int port_number = 5010;
 	struct sockaddr_in server_socket, client_socket;	
+	socklen_t length_client;
+	char buffer[256];
+
+	bzero((char *) &server_socket, sizeof(server_socket));
+	bzero((char *) &client_socket, sizeof(client_socket));
 
 	//initialising socket stucture
 	server_socket.sin_family = AF_INET;
-	server_socket.sin_addr.s_addr = INADDR_ANY;
+	server_socket.sin_addr.s_addr = inet_addr("127.0.0.1");
 	server_socket.sin_port = htons(port_number);
+	length_client = sizeof(client_socket);
 
-	cout<<"Welcome"<<endl;
+	cout<<"Welcome"<<server_socket.sin_addr.s_addr<<" "<<server_socket.sin_port<<endl;
 	file_descriptor = socket(domain,type,protocol);
 	if(file_descriptor < 0){
 		cout<<"Error, failed to create sockets"<<endl;
@@ -46,18 +56,25 @@ int main(){
 				cout<<"Error, failed to get to listen mode"<<endl;
 			}
 			else{
-				cout<<"Server has started....Please make requests to connect."<<endl;
-				file_descriptor =  accept(file_descriptor, (struct sockaddr *)&client_socket, (socklen_t*)sizeof(client_socket));
+				cout<<"Server has started....Please make requests to connect."<<endl;								
+				file_descriptor =  accept(file_descriptor, (struct sockaddr *)&client_socket, &length_client);
 				if(file_descriptor<0){
 					cout<<"Error, failed to create dedicated sockets for client"<<endl;
 				}
 				else{
-					status = connect(file_descriptor, (struct sockaddr *)&client_socket, sizeof(client_socket));
-					if(status==0){
-						cout<<"HEY! CONNECTED SUCCESSFULLY"<<endl;
+
+					length_client = sizeof(client_socket);										
+					cout<<"HEY! CONNECTED SUCCESSFULLY"<<endl;
+					cout<<client_socket.sin_addr.s_addr<<endl;
+					bzero(buffer,256);
+					int n = read( file_descriptor,buffer,255);
+					cout<<buffer;
+					if(n<0){
+						cout<<"ERROR reading from socket"<<endl;						
 					}
-					else{
-						cout<<"Error, failed to connect to client, Please try again"<<endl;
+					n = write(file_descriptor,"hey sherlock",12);
+					if(n<0){
+						cout<<"Error writing to port"<<endl;
 					}
 				}
 			}
