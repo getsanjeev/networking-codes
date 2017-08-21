@@ -66,12 +66,14 @@ int main(){
 					cout<<client_socket.sin_addr.s_addr<<endl;
 					while(1){
 						bzero(buffer,256);
-						int n = read( file_descriptor,buffer,255);
-						cout<<buffer;
+						int n = read(file_descriptor,buffer,255);
+						cout<<buffer<<endl;
 						if(n<0){
 							cout<<"ERROR reading from socket"<<endl;						
 						}
-						n = write(file_descriptor,"hey sherlock",12);
+						//cin.ignore();
+    					cin.getline( buffer, '\n');
+						n = write(file_descriptor,buffer,12);
 						if(n<0){
 							cout<<"Error writing to port"<<endl;
 						}

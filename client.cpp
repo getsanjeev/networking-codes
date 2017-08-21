@@ -35,12 +35,15 @@ int main(){
    			else{
    				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;
    				while(1){
-   					bzero(buffer,256);				
-					int n = write(file_descriptor,"hey moriarty",12);
+   					bzero(buffer,256);	
+   					//cin.ignore();
+    				cin.getline( buffer, '\n');			
+					int n = write(file_descriptor,buffer,12);
 					if(n<0){
 						cout<<"ERROR reading from socket"<<endl;						
 					}
-					n = read( file_descriptor,buffer,255);
+					bzero(buffer,256);
+					n = read(file_descriptor,buffer,255);
 					cout<<buffer<<endl;
 					if(n<0){
 						cout<<"Error writing to port"<<endl;
