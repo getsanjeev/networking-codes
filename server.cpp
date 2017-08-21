@@ -61,21 +61,22 @@ int main(){
 				if(file_descriptor<0){
 					cout<<"Error, failed to create dedicated sockets for client"<<endl;
 				}
-				else{
-
-					length_client = sizeof(client_socket);										
+				else{																
 					cout<<"HEY! CONNECTED SUCCESSFULLY"<<endl;
 					cout<<client_socket.sin_addr.s_addr<<endl;
-					bzero(buffer,256);
-					int n = read( file_descriptor,buffer,255);
-					cout<<buffer;
-					if(n<0){
-						cout<<"ERROR reading from socket"<<endl;						
-					}
-					n = write(file_descriptor,"hey sherlock",12);
-					if(n<0){
-						cout<<"Error writing to port"<<endl;
-					}
+					while(1){
+						bzero(buffer,256);
+						int n = read( file_descriptor,buffer,255);
+						cout<<buffer;
+						if(n<0){
+							cout<<"ERROR reading from socket"<<endl;						
+						}
+						n = write(file_descriptor,"hey sherlock",12);
+						if(n<0){
+							cout<<"Error writing to port"<<endl;
+						}
+
+					}				
 				}
 			}
 		}
