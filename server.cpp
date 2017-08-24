@@ -8,16 +8,20 @@
 
 using namespace std;
 
-/*struct in_addr {
-   unsigned long s_addr;
-};
-*/
-/*struct sockaddr_in {
-   short int            sin_family;
-   unsigned short int   sin_port;
-   struct in_addr       sin_addr;
-   unsigned char        sin_zero[8];
-};*/
+void communicate(int file_descriptor){
+	char buffer[256];
+	bzero(buffer,256);
+	int n = read(file_descriptor,buffer,255);
+	cout<<buffer<<endl;
+	if(n<0){
+		cout<<"ERROR reading from socket"<<endl;						
+	}						
+    cin.getline( buffer, '\n');
+	n = write(file_descriptor,buffer,12);
+	if(n<0){
+		cout<<"Error writing to port"<<endl;
+	}
+}
 
 int main(){
 
@@ -25,18 +29,18 @@ int main(){
 	int type = SOCK_STREAM;
 	int protocol = 0;
 	int status = 0;
-	int file_descriptor = 0;
+	int file_descriptor = 0,new_file_descriptor =0;
 	int port_number = 5010;
 	struct sockaddr_in server_socket, client_socket;	
-	socklen_t length_client;
-	char buffer[256];
+	socklen_t length_client;	
+	int pid;
 
 	bzero((char *) &server_socket, sizeof(server_socket));
 	bzero((char *) &client_socket, sizeof(client_socket));
 
 	//initialising socket stucture
 	server_socket.sin_family = AF_INET;
-	server_socket.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server_socket.sin_addr.s_addr = inet_addr("127.1.0.1");
 	server_socket.sin_port = htons(port_number);
 	length_client = sizeof(client_socket);
 
@@ -57,29 +61,26 @@ int main(){
 			}
 			else{
 				cout<<"Server has started....Please make requests to connect."<<endl;								
-				while(1){
-
-				file_descriptor =  accept(file_descriptor, (struct sockaddr *)&client_socket, &length_client);
+				while(1){				
+				new_file_descriptor =  accept(file_descriptor, (struct sockaddr *)&client_socket, &length_client);				
 				if(file_descriptor<0){
 					cout<<"Error, failed to create dedicated sockets for client"<<endl;
 				}
-				else{																
+				else{
 					cout<<"HEY! CONNECTED SUCCESSFULLY"<<endl;
 					cout<<client_socket.sin_addr.s_addr<<endl;
-					
-						bzero(buffer,256);
-						int n = read(file_descriptor,buffer,255);
-						cout<<buffer<<endl;
-						if(n<0){
-							cout<<"ERROR reading from socket"<<endl;						
-						}						
-    					cin.getline( buffer, '\n');
-						n = write(file_descriptor,buffer,12);
-						if(n<0){
-							cout<<"Error writing to port"<<endl;
-						}
-
+					pid = fork();
+					if(pid<0){						
+						cout<<"Unable to create new process for new client..."<<endl;						
 					}
+					if(pid==0){
+						close(file_descriptor);
+						communicate(new_file_descriptor);
+					}
+					else{
+						close(new_file_descriptor);
+					}
+				}
 
 				}				
 			}

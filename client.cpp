@@ -26,7 +26,7 @@ int main(){
 	else{		
    			bzero((char *) &server_socket, sizeof(server_socket));
    			server_socket.sin_family = AF_INET;   			
-   			server_socket.sin_addr.s_addr = inet_addr("127.0.0.1");
+   			server_socket.sin_addr.s_addr = inet_addr("127.1.0.1");
    			server_socket.sin_port = htons(port_number);   			
    			status = connect(file_descriptor, (struct sockaddr*)&server_socket, sizeof(server_socket));
    			if(status < 0){
@@ -34,7 +34,7 @@ int main(){
    			}
    			else{
    				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;
-   				while(1){   					   								
+   				while(1){  					   								
     				cin.getline( buffer, '\n');			    				
 					int n = write(file_descriptor,buffer,12);
 					if(n<0){
