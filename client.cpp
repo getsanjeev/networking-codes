@@ -36,7 +36,7 @@ int main(){
    				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;
    				while(1){  					   								
     				cin.getline( buffer, '\n');			    				
-					int n = write(file_descriptor,buffer,12);
+					int n = write(file_descriptor,buffer,256);
 					if(n<0){
 						cout<<"ERROR reading from socket"<<endl;						
 					}
