@@ -223,13 +223,6 @@ void map_command(vector <string> command_args,int file_descriptor){
 		if(n<0){
 			cout<<"Error sending file description"<<endl;
 		}
-		reply = recieve(file_descriptor,512);		
-		if(reply.size() <=0){
-			cout<<"Error reading the reply"<<endl;
-		}		
-		else{
-			cout<<reply<<endl;
-		}
 	}
 	else if(command_args[0] == "get"){
 		file_name = ls();
@@ -267,15 +260,15 @@ void map_command(vector <string> command_args,int file_descriptor){
 
 
 void ftpmode(int file_descriptor){
-	char array [1024];
-	recieve(file_descriptor,128);
-	string command;
-	cin>>command;
+	char array [1024];	
+	string command;	
+	command  = recieve(file_descriptor,256);
 	vector<string> command_args =  tokenizer(strtrim(command));
 	if(command_args.size() > 0){
+		//cout<<"command form client is : "<<command_args.at(0)<<endl;
 		map_command(command_args,file_descriptor);
 	}
-	else{
+	else{		
 		send(file_descriptor,"invalid command",20);
 	}
 }

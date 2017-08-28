@@ -20,6 +20,7 @@ void str2char(string data, char* destination){
 
 int send(int file_descriptor,string message,int count){
 	char buffer[1024];	
+	bzero(buffer,2*count);
 	str2char(message,buffer);
 	int n = -1;	
 	n = write(file_descriptor,buffer,count);
@@ -40,6 +41,19 @@ string recieve(int file_descriptor, int count){
 	return stri;
 }
 
+void show_available_files(int file_descriptor){
+	int n = send(file_descriptor,"ls",128);
+	if(n<0){
+		cout<<"error asking to show files"<<endl;
+	}
+	string list = recieve(file_descriptor,512);
+	if(list.size()<1){
+		cout<<"error reading list of files"<<endl;		
+	}
+	else{
+		cout<<list<<endl;
+	}
+}
 
 void get_file(int file_descriptor,string file_name){
 	int n = send(file_descriptor,file_name,256);
@@ -51,6 +65,10 @@ void get_file(int file_descriptor,string file_name){
 	  	content = recieve(file_descriptor,1024);
 	  	if(content.size()<1){
 	  		cout<<"error in downloading file"<<endl;
+	  	}
+	  	else if(content == "No such files found"){
+	  		cout<<content<<endl;
+	  		cout<<"try ls to check what files are present"<<endl;
 	  	}
 	  	else{
 	  		ofstream file;
@@ -85,7 +103,8 @@ int main(){
    				cout<<"Could not connect, please try again..."<<endl; 
    			}
    			else{
-   				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;   			   				   			
+   				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;
+   				show_available_files(file_descriptor);
    			}
 	}
 }
