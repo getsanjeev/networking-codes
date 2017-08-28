@@ -22,7 +22,7 @@ string get_data_string(string file_name) //takes name of file as the input and r
 
     while ((x = file.get())!= EOF)
     {
-            word = word + x;
+        word = word + x;
     }
     file.close();
     return word;
@@ -184,21 +184,21 @@ void str2char(string data, char* destination){
 	}	
 }
 
-int send(int file_descriptor,string message){
+int send(int file_descriptor,string message,int count){
 	char buffer[1024];	
 	str2char(message,buffer);
 	int n = -1;	
-	n = write(file_descriptor,buffer,255);
+	n = write(file_descriptor,buffer,count);
 	if(n<0){
 		cout<<"Error writing to port"<<endl;
 		}
 	return n;
 }
 
-string recieve(int file_descriptor){
-	char buffer[1024];
-	bzero(buffer,1024);
-	int n = read(file_descriptor,buffer,255);	
+string recieve(int file_descriptor, int count){
+	char buffer[2*count];
+	bzero(buffer,2*count);
+	int n = read(file_descriptor,buffer,count);
 	if(n<0){
 		cout<<"ERROR reading from socket"<<endl;
 	}	
@@ -219,16 +219,16 @@ void map_command(vector <string> command_args,int file_descriptor){
 			msg = msg + " " + file_name.at(i);			
 		}
 		str2char(msg,buffer);
-		n = send(file_descriptor,buffer);					
+		n = send(file_descriptor,buffer,msg.size());					
 		if(n<0){
 			cout<<"Error sending file description"<<endl;
 		}
-		reply = recieve(file_descriptor);		
+		reply = recieve(file_descriptor,512);		
 		if(reply.size() <=0){
 			cout<<"Error reading the reply"<<endl;
 		}		
 		else{
-		cout<<reply<<endl;
+			cout<<reply<<endl;
 		}
 	}
 	else if(command_args[0] == "get"){
@@ -244,16 +244,31 @@ void map_command(vector <string> command_args,int file_descriptor){
 		}
 		else{
 			string data = get_data_string(command_args[1]);
-
+			char temp_buffer [data.size()+10];
+			str2char(data,temp_buffer);
+			n = send(file_descriptor,temp_buffer,data.size());
+			if(n<0){
+				cout<<"error writing to ports"<<endl;
+			}
+			else{
+				cout<<"file sent successfully"<<endl;
+			}
 		}
-
+	}
+	else if(command_args[0] == "put"){
+		string incoming_file_name = command_args[1];
+		ofstream file;
+	  	file.open(incoming_file_name.c_str());
+	  	string content = recieve(file_descriptor,1024);
+  		file << content;
+  		file.close();
 	}
 }
 
 
 void ftpmode(int file_descriptor){
 	char array [1024];
-	recieve(file_descriptor);
+	recieve(file_descriptor,128);
 	string command;
 	cin>>command;
 	vector<string> command_args =  tokenizer(strtrim(command));
@@ -261,7 +276,7 @@ void ftpmode(int file_descriptor){
 		map_command(command_args,file_descriptor);
 	}
 	else{
-		send(file_descriptor,"invalid command");
+		send(file_descriptor,"invalid command",20);
 	}
 }
 
@@ -319,8 +334,12 @@ void turn_on_server(string server_type){
 						close(file_descriptor);
 						if(server_type == "echo_server"){
 							getline(cin, buffer);
-							send(new_file_descriptor,buffer);
-							recieve(new_file_descriptor);
+							int n = send(new_file_descriptor,buffer,buffer.size());
+							if(n<0){
+								cout<<"Error sending the message"<<endl;
+							}
+							string reply = recieve(new_file_descriptor,256);
+							cout<<reply<<endl;
 						}
 						else if(server_type == "ftp_server"){
 							ftpmode(new_file_descriptor);
