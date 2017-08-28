@@ -110,7 +110,7 @@ string strtrim(string sentence)
 
 vector<int> get_white_spaces(string sentence)
 {
-	vector<int> space_index(20);
+	vector<int> space_index(100);
 	char x;
 	int i = 0;
 	int j,k;
@@ -151,7 +151,7 @@ vector<string> tokenizer(string sentence)
 {
 	int p;
 	sentence = strtrim(sentence);
-	vector<string> tokens (10);
+	vector<string> tokens (100);
 	vector<int> index_vector = get_white_spaces(sentence);
 	int pre,post,length,i;
 	i= 0;
@@ -212,7 +212,7 @@ void map_command(vector <string> command_args,int file_descriptor){
 	int n = -1;
 	string reply;
 	vector<string> file_name;
-	if(command_args[0] == "ls"){
+	if(command_args.at(0) == "ls"){
 		file_name = ls();				
 		string msg = "";
 		for(int i=0;i<file_name.size();i++){
@@ -224,7 +224,7 @@ void map_command(vector <string> command_args,int file_descriptor){
 			cout<<"Error sending file description"<<endl;
 		}
 	}
-	else if(command_args[0] == "get"){
+	else if(command_args.at(0) == "get"){
 		file_name = ls();
 		int flag = 0;
 		for(int i =0;i<file_name.size();i++){
@@ -236,7 +236,8 @@ void map_command(vector <string> command_args,int file_descriptor){
 			cout<<"No such files found"<<endl;
 		}
 		else{
-			string data = get_data_string(command_args[1]);
+			string data = get_data_string(command_args.at(1));
+			cout<<data<<endl;
 			char temp_buffer [data.size()+10];
 			str2char(data,temp_buffer);
 			n = send(file_descriptor,temp_buffer,data.size());
@@ -248,10 +249,10 @@ void map_command(vector <string> command_args,int file_descriptor){
 			}
 		}
 	}
-	else if(command_args[0] == "put"){
-		string incoming_file_name = command_args[1];
+	else if(command_args.at(0) == "put"){
+		string incoming_file_name = command_args.at(1);
 		ofstream file;
-	  	file.open(incoming_file_name.c_str());
+	  	file.open(incoming_file_name.c_str());	  	
 	  	string content = recieve(file_descriptor,1024);
   		file << content;
   		file.close();
@@ -261,16 +262,21 @@ void map_command(vector <string> command_args,int file_descriptor){
 
 void ftpmode(int file_descriptor){
 	char array [1024];	
-	string command;	
+	string command;
+	while(1){
 	command  = recieve(file_descriptor,256);
+	cout<<command<<" :exact command is: "<<endl;
 	vector<string> command_args =  tokenizer(strtrim(command));
 	if(command_args.size() > 0){
-		//cout<<"command form client is : "<<command_args.at(0)<<endl;
+		cout<<"command from client is : "<<command_args.at(0)<<command_args.at(1)<<endl;
 		map_command(command_args,file_descriptor);
 	}
 	else{		
 		send(file_descriptor,"invalid command",20);
 	}
+
+	}
+	
 }
 
 void turn_on_server(string server_type){
@@ -336,8 +342,8 @@ void turn_on_server(string server_type){
 						}
 						else if(server_type == "ftp_server"){
 							ftpmode(new_file_descriptor);
-						}
-						break;
+							break;
+						}						
 					}
 					else{
 						close(new_file_descriptor);

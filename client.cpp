@@ -10,6 +10,22 @@
 
 using namespace std;
 
+string get_data_string(string file_name) //takes name of file as the input and returns a string that contains all the text
+{
+	ifstream file(file_name.c_str());
+    string word;
+    char x ;
+    word.clear();
+    int count  = 0;
+
+    while ((x = file.get())!= EOF)
+    {
+        word = word + x;
+    }
+    file.close();
+    return word;
+}
+
 void str2char(string data, char* destination){
 	int size = data.size();
 	char strarray[size];
@@ -19,7 +35,7 @@ void str2char(string data, char* destination){
 }
 
 int send(int file_descriptor,string message,int count){
-	char buffer[1024];	
+	char buffer[2*count];	
 	bzero(buffer,2*count);
 	str2char(message,buffer);
 	int n = -1;	
@@ -55,8 +71,21 @@ void show_available_files(int file_descriptor){
 	}
 }
 
+void put_file(int file_descriptor, string file_name){
+	string content = get_data_string(file_name);
+	int n = send(file_descriptor,string("put")+" "+file_name,256);
+	if(n<0){
+		cout<<"error sending file..."<<endl;
+	}
+	n = send(file_descriptor,content,1024);
+		
+	if(n<0){
+		cout<<"error uploading file"<<endl;
+	}	
+}
+
 void get_file(int file_descriptor,string file_name){
-	int n = send(file_descriptor,file_name,256);
+	int n = send(file_descriptor,string("get")+" "+file_name,256);
 	string content = "";
 	if(n<0){
 		cout<<"error requesting file"<<endl;
@@ -77,6 +106,30 @@ void get_file(int file_descriptor,string file_name){
   			file.close(); 
   			cout<<"download successful"<<endl;
 	  	}  		
+	}
+}
+
+void show_menu(int file_descriptor){	
+	int loop_invariant = 0;
+	int choice = -1;	
+	string file_name = "";
+	while(loop_invariant == 0){
+		cout<<"Enter command to 1. get list of files 2. download file 3. upload file 4. exit"<<endl;
+		cin>>choice;
+		switch(choice){
+			case 1: show_available_files(file_descriptor);
+						break;
+			case 2:cout<<"enter the file name to download"<<endl;
+							cin>>file_name;
+							get_file(file_descriptor,file_name);
+							break;
+			case 3:cout<<"enter the file name to upload"<<endl;
+							file_name.clear();
+							cin>>file_name;
+							put_file(file_descriptor,file_name);
+							break;
+			case 4: loop_invariant = 1;
+		}
 	}
 }
 
@@ -104,7 +157,7 @@ int main(){
    			}
    			else{
    				cout<<"status "<<status<<" ..........connected succesfully.........."<<endl;
-   				show_available_files(file_descriptor);
+   				show_menu(file_descriptor);
    			}
 	}
 }
